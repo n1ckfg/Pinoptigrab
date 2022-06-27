@@ -189,7 +189,8 @@ void ofApp::update() {
     if (cam.isFrameNew()) {
 		ofPixels tempPixels = cam.getPixelsRef();
 		gray.setFromPixels(tempPixels);
-
+		frame = toCv(gray);
+		
         if (sendMjpeg) streamServer.send(gray.getPixels());
         
         if (syncVideo) {
@@ -218,126 +219,132 @@ void ofApp::update() {
 void ofApp::draw() {
     ofBackground(0);
 
-    if(!frame.empty()) {
-        if (debug) {
-            if (!blobs && !contours) {
-                drawMat(frame, 0, 0);
-            } else if (blobs || contours) {
-                drawMat(frameProcessed, 0, 0);
-            }
-        }
+    if(cam.isFrameNew()) {
+		fbo.begin();
+		
+		if (debug) {
+			if (!blobs && !contours) {
+				drawMat(frame, 0, 0);
+			} else if (blobs || contours) {
+				drawMat(frameProcessed, 0, 0);
+			}
+		}
 
-        if (syncVideo) {
-            if (sendOsc) sendOscVideo();
-            if (sendWs) sendWsVideo();
-        } 
+		if (syncVideo) {
+			if (sendOsc) sendOscVideo();
+			if (sendWs) sendWsVideo();
+		} 
 
-        if (blobs) {
-            if (debug) {
-            	ofSetLineWidth(2);
-            	ofNoFill();
-            }
-            
-            //autothreshold(frameProcessed);        
-            threshold(frame, frameProcessed, thresholdValue, 255, 0);
-            contourFinder.setThreshold(contourThreshold);    
-            contourFinder.findContours(frameProcessed);
+		if (blobs) {
+			if (debug) {
+				ofSetLineWidth(2);
+				ofNoFill();
+			}
+			
+			//autothreshold(frameProcessed);        
+			threshold(frame, frameProcessed, thresholdValue, 255, 0);
+			contourFinder.setThreshold(contourThreshold);    
+			contourFinder.findContours(frameProcessed);
 
-            int n = contourFinder.size();
-            for (int i = 0; i < n; i++) {
-                float circleRadius;
-                glm::vec2 circleCenter = toOf(contourFinder.getMinEnclosingCircle(i, circleRadius));
-                if (debug) {
-                	ofSetColor(cyanPrint);
-                	ofDrawCircle(circleCenter, circleRadius);
-                	ofDrawCircle(circleCenter, 1);
-                }
+			int n = contourFinder.size();
+			for (int i = 0; i < n; i++) {
+				float circleRadius;
+				glm::vec2 circleCenter = toOf(contourFinder.getMinEnclosingCircle(i, circleRadius));
+				if (debug) {
+					ofSetColor(cyanPrint);
+					ofDrawCircle(circleCenter, circleRadius);
+					ofDrawCircle(circleCenter, 1);
+				}
 
-                if (sendOsc) sendOscBlobs(i, circleCenter.x, circleCenter.y);
-                if (sendWs) sendWsBlobs(i, circleCenter.x, circleCenter.y);
-            }
-        }
+				if (sendOsc) sendOscBlobs(i, circleCenter.x, circleCenter.y);
+				if (sendWs) sendWsBlobs(i, circleCenter.x, circleCenter.y);
+			}
+		}
 
-        if (contours) {
-            if (debug) {
-                ofSetLineWidth(2);
-                ofNoFill();
-            }
+		if (contours) {
+			if (debug) {
+				ofSetLineWidth(2);
+				ofNoFill();
+			}
 
-            int contourCounter = 0;
-            unsigned char * pixels = gray.getPixels().getData();
-            int gw = gray.getWidth();
+			int contourCounter = 0;
+			unsigned char * pixels = gray.getPixels().getData();
+			int gw = gray.getWidth();
 
-            for (int h=0; h<255; h += int(255/contourSlices)) {
-                contourFinder.setThreshold(h);
-                contourFinder.findContours(frame);
-                contourFinder.draw();            
+			for (int h=0; h<255; h += int(255/contourSlices)) {
+				contourFinder.setThreshold(h);
+				contourFinder.findContours(frame);
+				contourFinder.draw();            
 
-                int n = contourFinder.size();
-                for (int i = 0; i < n; i++) {
-                    ofPolyline line = contourFinder.getPolyline(i);
-                    vector<glm::vec3> cvPoints = line.getVertices();
+				int n = contourFinder.size();
+				for (int i = 0; i < n; i++) {
+					ofPolyline line = contourFinder.getPolyline(i);
+					vector<glm::vec3> cvPoints = line.getVertices();
 
-                    int x = int(cvPoints[0].x);
-                    int y = int(cvPoints[0].y);
-                    ofColor col = pixels[x + y * gw];
-                    float colorData[3]; 
-                    colorData[0] = col.r;
-                    colorData[1] = col.g;
-                    colorData[2] = col.b;
-                    char const * pColor = reinterpret_cast<char const *>(colorData);
-                    std::string colorString(pColor, pColor + sizeof colorData);
-                    contourColorBuffer.set(colorString); 
+					int x = int(cvPoints[0].x);
+					int y = int(cvPoints[0].y);
+					ofColor col = pixels[x + y * gw];
+					float colorData[3]; 
+					colorData[0] = col.r;
+					colorData[1] = col.g;
+					colorData[2] = col.b;
+					char const * pColor = reinterpret_cast<char const *>(colorData);
+					std::string colorString(pColor, pColor + sizeof colorData);
+					contourColorBuffer.set(colorString); 
 
-                    float pointsData[cvPoints.size() * 2]; 
-                    for (int j=0; j<cvPoints.size(); j++) {
-                        int index = j * 2;
-                        pointsData[index] = cvPoints[j].x;
-                        pointsData[index+1] = cvPoints[j].y;
-                    }
-                    char const * pPoints = reinterpret_cast<char const *>(pointsData);
-                    std::string pointsString(pPoints, pPoints + sizeof pointsData);
-                    contourPointsBuffer.set(pointsString); 
+					float pointsData[cvPoints.size() * 2]; 
+					for (int j=0; j<cvPoints.size(); j++) {
+						int index = j * 2;
+						pointsData[index] = cvPoints[j].x;
+						pointsData[index+1] = cvPoints[j].y;
+					}
+					char const * pPoints = reinterpret_cast<char const *>(pointsData);
+					std::string pointsString(pPoints, pPoints + sizeof pointsData);
+					contourPointsBuffer.set(pointsString); 
 
-                    if (sendOsc) sendOscContours(contourCounter);
-                    if (sendWs) sendWsContours(contourCounter);
-                    contourCounter++;
-                }        
-            }
-        }
-           
-        if (brightestPixel) {
-        	// this mostly useful as a performance baseline
-            // https://openframeworks.cc/ofBook/chapters/image_processing_computer_vision.html
-            float maxBrightness = 0; 
-            float maxBrightnessX = 0; 
-            float maxBrightnessY = 0;
-            int skip = 2;
+					if (sendOsc) sendOscContours(contourCounter);
+					if (sendWs) sendWsContours(contourCounter);
+					contourCounter++;
+				}        
+			}
+		}
+		   
+		if (brightestPixel) {
+			// this mostly useful as a performance baseline
+			// https://openframeworks.cc/ofBook/chapters/image_processing_computer_vision.html
+			float maxBrightness = 0; 
+			float maxBrightnessX = 0; 
+			float maxBrightnessY = 0;
+			int skip = 2;
 
-            for (int y=0; y<height - skip; y += skip) {
-                for (int x=0; x<width - skip; x += skip) {
-                    ofColor colorAtXY = gray.getColor(x, y);
-                    float brightnessOfColorAtXY = colorAtXY.getBrightness();
-                    if (brightnessOfColorAtXY > maxBrightness && brightnessOfColorAtXY > thresholdValue) {
-                        maxBrightness = brightnessOfColorAtXY;
-                        maxBrightnessX = x;
-                        maxBrightnessY = y;
-                    }
-                }
-            }
+			for (int y=0; y<height - skip; y += skip) {
+				for (int x=0; x<width - skip; x += skip) {
+					ofColor colorAtXY = gray.getColor(x, y);
+					float brightnessOfColorAtXY = colorAtXY.getBrightness();
+					if (brightnessOfColorAtXY > maxBrightness && brightnessOfColorAtXY > thresholdValue) {
+						maxBrightness = brightnessOfColorAtXY;
+						maxBrightnessX = x;
+						maxBrightnessY = y;
+					}
+				}
+			}
 
-            if (debug) {
-            	ofNoFill();
-            	glm::vec2 circleCenter = glm::vec2(maxBrightnessX, maxBrightnessY);
-            	ofDrawCircle(circleCenter, 40);
-            }
+			if (debug) {
+				ofNoFill();
+				glm::vec2 circleCenter = glm::vec2(maxBrightnessX, maxBrightnessY);
+				ofDrawCircle(circleCenter, 40);
+			}
 
-            if (sendOsc) sendOscPixel(maxBrightnessX, maxBrightnessY);
-            if (sendWs) sendWsPixel(maxBrightnessX, maxBrightnessY);
-        }
+			if (sendOsc) sendOscPixel(maxBrightnessX, maxBrightnessY);
+			if (sendWs) sendWsPixel(maxBrightnessX, maxBrightnessY);
+		}
+		
+		fbo.end();
     }
 
     if (debug) {
+		fbo.draw(0,0);
+		
         stringstream info;
         info << cam.getWidth() << "x" << cam.getHeight() << " @ "<< ofGetFrameRate() <<"fps"<< "\n";
         ofDrawBitmapStringHighlight(info.str(), 10, 10, ofColor::black, ofColor::yellow);
