@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxCv.h"
-#include "ofxCvPiCam.h"
+//#include "ofxCvPiCam.h"
 #include "ofxOsc.h"
 #include "ofxXmlSettings.h"
 #include "ofxHTTP.h"
@@ -74,7 +74,7 @@ class ofApp : public ofBaseApp {
 	ofBuffer contourColorBuffer;
 	ofBuffer contourPointsBuffer;
 
-	ofxCvPiCam cam;
+	ofVideoGrabber cam;
 	cv::Mat frame, frameProcessed;
 	ofImage gray;
 	int syncVideoQuality; // 5 best to 1 worst, default 3 medium
@@ -82,12 +82,13 @@ class ofApp : public ofBaseApp {
 
 	// for more camera settings, see:
 	// https://github.com/orgicus/ofxCvPiCam/blob/master/example-ofxCvPiCam-allSettings/src/testApp.cpp
-
-        int camRotation;        
-        int camShutterSpeed; // 0 to 330000 in microseconds, default 0
-        int camSharpness; // -100 to 100, default 0
-        int camContrast; // -100 to 100, default 0
-        int camBrightness; // 0 to 100, default 50
+	
+	int camId = 0;
+    int camRotation;        
+    int camShutterSpeed; // 0 to 330000 in microseconds, default 0
+    int camSharpness; // -100 to 100, default 0
+    int camContrast; // -100 to 100, default 0
+    int camBrightness; // 0 to 100, default 50
 	int camIso; // 100 to 800, default 300
 	int camExposureCompensation; // -10 to 10, default 0;
 
@@ -115,5 +116,8 @@ class ofApp : public ofBaseApp {
 	float contourMaxAreaRadius; // default 150
 	int contourSlices; // default 20
 	ofxCv::TrackingColorMode trackingColorMode; // RGB, HSV, H, HS; default RGB
+
+    void keyPressed(int key);
+	void grabberSetup(int _id, int _fps, int _width, int _height);
 
 };

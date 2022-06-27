@@ -15,7 +15,7 @@ sudo ./tools/soft-hwclock/install
 DIR=$PWD
 
 cd ../../../addons
-git clone https://github.com/n1ckfg/ofxCvPiCam
+#git clone https://github.com/n1ckfg/ofxCvPiCam
 #git clone https://github.com/n1ckfg/ofxOMXCamera
 git clone https://github.com/n1ckfg/ofxHTTP
 git clone https://github.com/n1ckfg/ofxIO

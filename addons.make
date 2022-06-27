@@ -1,5 +1,5 @@
 ofxCv
-ofxCvPiCam
+#ofxCvPiCam
 ofxOpenCv
 ofxOsc
 ofxXmlSettings

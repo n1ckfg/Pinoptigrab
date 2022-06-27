@@ -13,7 +13,8 @@ void ofApp::setup() {
     appFramerate = settings.getValue("settings:app_framerate", 60);
     camFramerate = settings.getValue("settings:cam_framerate", 30);
     ofSetFrameRate(appFramerate);
-
+	camId = settings.getValue("settings:cam_id", 0);
+	
     syncVideoQuality = settings.getValue("settings:osc_video_quality", 3); 
     videoColor = (bool) settings.getValue("settings:video_color", 0); 
     
@@ -51,7 +52,8 @@ void ofApp::setup() {
         gray.allocate(width, height, OF_IMAGE_GRAYSCALE);        
     }
     
-    cam.setup(width, height, camFramerate, videoColor); // color/gray;
+    //cam.setup(width, height, camFramerate, videoColor); // color/gray;
+	grabberSetup(camId, camFramerate, width, height);
 
     camRotation = settings.getValue("settings:cam_rotation", 0); 
     camSharpness = settings.getValue("settings:sharpness", 0); 
@@ -62,6 +64,7 @@ void ofApp::setup() {
     camExposureCompensation = settings.getValue("settings:exposure_compensation", 0); 
     camShutterSpeed = settings.getValue("settings:shutter_speed", 0);
 
+    /*
     cam.setRotation(camRotation);
     cam.setSharpness(camSharpness);
     cam.setContrast(camContrast);
@@ -71,6 +74,7 @@ void ofApp::setup() {
     cam.setExposureCompensation(camExposureCompensation);
     cam.setShutterSpeed(camShutterSpeed);
     //cam.setFrameRate // not implemented in ofxCvPiCam 
+	*/
 
     // ~ ~ ~   get a persistent name for this computer   ~ ~ ~
     // a randomly generated id
@@ -152,14 +156,39 @@ void ofApp::setup() {
     }
 }
 
+void ofApp::grabberSetup(int _id, int _fps, int _width, int _height) {
+    //get back a list of devices.
+    vector<ofVideoDevice> devices = cam.listDevices();
+
+    for(size_t i = 0; i < devices.size(); i++){
+        if(devices[i].bAvailable){
+            //log the device
+            ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
+        }else{
+            //log the device and note it as unavailable
+            ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable ";
+        }
+    }
+
+    cam.setDeviceID(_id);
+    cam.setDesiredFrameRate(_fps);
+    cam.initGrabber(_width, _height);
+}
+
 //--------------------------------------------------------------
 void ofApp::update() {
     timestamp = (int) ofGetSystemTimeMillis();
     
-    frame = cam.grab();
+    //frame = cam.grab();
 
-    if (!frame.empty()) {
-        toOf(frame, gray.getPixelsRef());
+    //if (!frame.empty()) {
+        //toOf(frame, gray.getPixelsRef());
+
+    cam.update();
+
+    if (cam.isFrameNew()) {
+		ofPixels tempPixels = cam.getPixelsRef();
+		gray.setFromPixels(tempPixels);
 
         if (sendMjpeg) streamServer.send(gray.getPixels());
         
@@ -310,7 +339,7 @@ void ofApp::draw() {
 
     if (debug) {
         stringstream info;
-        info << cam.width << "x" << cam.height << " @ "<< ofGetFrameRate() <<"fps"<< "\n";
+        info << cam.getWidth() << "x" << cam.getHeight() << " @ "<< ofGetFrameRate() <<"fps"<< "\n";
         ofDrawBitmapStringHighlight(info.str(), 10, 10, ofColor::black, ofColor::yellow);
     }
 }
@@ -517,4 +546,20 @@ void ofApp::sendWsPixel(float x, float y) {
 
     string msg = "{\"unique_id\":\"" + uniqueId + "\",\"hostname\":\"" + hostName + "\",\"x\":\"" + ofToString(xPos) + "\",\"y\":\"" + ofToString(yPos) + "\",\"timestamp\":\"" + ofToString(timestamp) + "\"}";
     wsServer.webSocketRoute().broadcast(ofxHTTP::WebSocketFrame(msg));
+}
+
+void ofApp::keyPressed(int key) {
+    // in fullscreen mode, on a pc at least, the 
+    // first time video settings the come up
+    // they come up *under* the fullscreen window
+    // use alt-tab to navigate to the settings
+    // window. we are working on a fix for this...
+
+    // Video settings no longer works in 10.7
+    // You'll need to compile with the 10.6 SDK for this
+    // For Xcode 4.4 and greater, see this forum post on instructions on installing the SDK
+    // http://forum.openframeworks.cc/index.php?topic=10343
+    if (key == 's' || key == 'S') {
+        cam.videoSettings();
+    }
 }
