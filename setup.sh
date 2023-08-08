@@ -17,6 +17,7 @@ DIR=$PWD
 cd ../../../addons
 #git clone https://github.com/n1ckfg/ofxCvPiCam
 #git clone https://github.com/n1ckfg/ofxOMXCamera
+git clone https://github.com/n1ckfg/ofxCv
 git clone https://github.com/n1ckfg/ofxHTTP
 git clone https://github.com/n1ckfg/ofxIO
 git clone https://github.com/n1ckfg/ofxMediaType
