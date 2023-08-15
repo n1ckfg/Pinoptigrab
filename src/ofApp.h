@@ -101,6 +101,8 @@ class ofApp : public ofBaseApp {
 	bool thresholdKeyFast;
 
 	ofxOscSender sender;
+	
+	/*
 	void sendOscVideo();
 	void sendOscBlobs(int index, float x, float y);
 	void sendOscContours(int index);
@@ -109,7 +111,8 @@ class ofApp : public ofBaseApp {
 	void sendWsBlobs(int index, float x, float y);
 	void sendWsContours(int index);
 	void sendWsPixel(float x, float y);
-
+	*/
+	
 	ofxCv::ContourFinder contourFinder;
 	float contourThreshold;  // default 127
 	float contourMinAreaRadius; // default 10

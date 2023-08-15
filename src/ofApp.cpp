@@ -1,5 +1,6 @@
 #include "ofApp.h"
 #include "../../common/src/PinopticonUtils.hpp"
+#include "../../common/src/PinopticonUtilsHttp.hpp"
 
 using namespace cv;
 using namespace ofxCv;
@@ -166,7 +167,7 @@ void ofApp::grabberSetup(int _id, int _fps, int _width, int _height) {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    timestamp = (int) ofGetSystemTimeMillis();
+    timestamp = getTimestamp();
     
     //frame = cam.grab();
 
@@ -204,8 +205,8 @@ void ofApp::draw() {
 		}
 
 		if (syncVideo) {
-			if (sendOsc) sendOscVideo();
-			if (sendWs) sendWsVideo();
+           if (sendOsc) sendOscVideo(sender, hostName, sessionId, videoBuffer, timestamp);
+            if (sendWs) sendWsVideo(wsServer, hostName, sessionId, videoBuffer, timestamp);
 		} 
 
 		if (blobs) {
@@ -229,8 +230,8 @@ void ofApp::draw() {
 					ofDrawCircle(circleCenter, 1);
 				}
 
-				if (sendOsc) sendOscBlobs(i, circleCenter.x, circleCenter.y);
-				if (sendWs) sendWsBlobs(i, circleCenter.x, circleCenter.y);
+                if (sendOsc) sendOscBlobs(sender, hostName, sessionId, i, circleCenter.x, circleCenter.y, timestamp);
+                if (sendWs) sendWsBlobs(wsServer, hostName, sessionId, i, circleCenter.x, circleCenter.y, timestamp);
 			}
 		}
 
@@ -275,8 +276,8 @@ void ofApp::draw() {
 					std::string pointsString(pPoints, pPoints + sizeof pointsData);
 					contourPointsBuffer.set(pointsString); 
 
-					if (sendOsc) sendOscContours(contourCounter);
-					if (sendWs) sendWsContours(contourCounter);
+                    if (sendOsc) sendOscContours(sender, hostName, sessionId, contourCounter, contourColorBuffer, contourPointsBuffer, timestamp);
+                    if (sendWs) sendWsContours(wsServer, hostName, sessionId, contourCounter, contourColorBuffer, contourPointsBuffer, timestamp);
 					contourCounter++;
 				}        
 			}
@@ -308,8 +309,8 @@ void ofApp::draw() {
 				ofDrawCircle(circleCenter, 40);
 			}
 
-			if (sendOsc) sendOscPixel(maxBrightnessX, maxBrightnessY);
-			if (sendWs) sendWsPixel(maxBrightnessX, maxBrightnessY);
+            if (sendOsc) sendOscPixel(sender, hostName, sessionId, maxBrightnessX, maxBrightnessY, timestamp);
+            if (sendWs) sendWsPixel(wsServer, hostName, sessionId, maxBrightnessX, maxBrightnessY, timestamp);
 		}
 		
 		fbo.end();
@@ -447,6 +448,7 @@ void ofApp::streamPhoto() {
 }
 
 // ~ ~ ~ OSC ~ ~ ~
+/*
 void ofApp::sendOscVideo() {
     ofxOscMessage m;
     m.setAddress("/video");
@@ -527,6 +529,7 @@ void ofApp::sendWsPixel(float x, float y) {
     string msg = "{\"unique_id\":\"" + sessionId + "\",\"hostname\":\"" + hostName + "\",\"x\":\"" + ofToString(xPos) + "\",\"y\":\"" + ofToString(yPos) + "\",\"timestamp\":\"" + ofToString(timestamp) + "\"}";
     wsServer.webSocketRoute().broadcast(ofxHTTP::WebSocketFrame(msg));
 }
+*/
 
 void ofApp::keyPressed(int key) {
     // in fullscreen mode, on a pc at least, the 
