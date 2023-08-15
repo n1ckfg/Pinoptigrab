@@ -184,7 +184,7 @@ void ofApp::update() {
         if (sendMjpeg) streamServer.send(gray.getPixels());
         
         if (syncVideo) {
-            imagetoBuffer(gray, videoBuffer, syncVideoQuality);
+            imageToBuffer(gray, videoBuffer, syncVideoQuality);
        	}
     }
 }
@@ -194,7 +194,7 @@ void ofApp::draw() {
     ofBackground(0);
 
     if(cam.isFrameNew()) {
-		fbo.begin();
+		//fbo.begin();
 		
 		if (debug) {
 			if (!blobs && !contours) {
@@ -313,11 +313,11 @@ void ofApp::draw() {
             if (sendWs) sendWsPixel(wsServer, hostName, sessionId, maxBrightnessX, maxBrightnessY, timestamp);
 		}
 		
-		fbo.end();
+		//fbo.end();
     }
 
     if (debug) {
-		fbo.draw(0,0);
+		//fbo.draw(0,0);
 		
         stringstream info;
         info << cam.getWidth() << "x" << cam.getHeight() << " @ "<< ofGetFrameRate() <<"fps"<< "\n";
