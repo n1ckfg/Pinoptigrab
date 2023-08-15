@@ -25,6 +25,9 @@ void ofApp::setup() {
     height = settings.getValue("settings:height", 480);
     ofSetWindowShape(width, height);
 
+    thumbWidth = settings.getValue("settings:thumb_width", 120);
+    thumbHeight = settings.getValue("settings:thumb_height", 90);
+
     debug = (bool) settings.getValue("settings:debug", 1);
 
     sendOsc = (bool) settings.getValue("settings:send_osc", 1); 
@@ -51,8 +54,10 @@ void ofApp::setup() {
     // camera
     if (videoColor) {
         gray.allocate(width, height, OF_IMAGE_COLOR);
+        grayThumbnail.allocate(width, height, OF_IMAGE_COLOR);
     } else {
         gray.allocate(width, height, OF_IMAGE_GRAYSCALE);        
+        grayThumbnail.allocate(width, height, OF_IMAGE_GRAYSCALE);
     }
     
     //cam.setup(width, height, camFramerate, videoColor); // color/gray;
@@ -184,7 +189,9 @@ void ofApp::update() {
         if (sendMjpeg) streamServer.send(gray.getPixels());
         
         if (syncVideo) {
-            imageToBuffer(gray, videoBuffer, syncVideoQuality);
+            grayThumbnail.setFromPixels(gray.getPixels());
+            grayThumbnail.resize(thumbWidth, thumbHeight);
+            imageToBuffer(grayThumbnail, videoBuffer, syncVideoQuality);
        	}
     }
 }
