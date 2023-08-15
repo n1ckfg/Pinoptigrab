@@ -184,7 +184,7 @@ void ofApp::update() {
         if (sendMjpeg) streamServer.send(gray.getPixels());
         
         if (syncVideo) {
-            imageToBuffer(gray, videoBuffer, syncVideoQuality);
+            imagetoBuffer(gray, videoBuffer, syncVideoQuality);
        	}
     }
 }
