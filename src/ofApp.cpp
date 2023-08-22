@@ -172,17 +172,17 @@ void ofApp::update() {
 void ofApp::draw() {
     ofBackground(0);
 
-    if(cam.isFrameNew()) {
-		//fbo.begin();
-		
-		if (debug) {
-			if (!blobs && !contours) {
-				drawMat(frame, 0, 0);
-			} else if (blobs || contours) {
-				drawMat(frameProcessed, 0, 0);
-			}
-		}
+    //fbo.begin();
+        
+    if (debug) {
+        if (!blobs && !contours) {
+            drawMat(frame, 0, 0);
+        } else if (blobs || contours) {
+            drawMat(frameProcessed, 0, 0);
+        }
+    }
 
+    if(cam.isFrameNew()) {
 		if (syncVideo) {
            if (sendOsc) sendOscVideo(sender, hostName, sessionId, videoBuffer, timestamp);
             if (sendWs) sendWsVideo(wsServer, hostName, sessionId, videoBuffer, timestamp);
