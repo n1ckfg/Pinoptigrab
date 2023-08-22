@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <settings>
-    <osc_host>BrazilV.local</osc_host>
+    <osc_host>127.0.0.1</osc_host>
     <osc_port>7110</osc_port>
     <stream_port>7111</stream_port>
-    <ws_port>7112</ws_port>
+    <ws_port>7115</ws_port>
     <post_port>7113</post_port>
     <!-- * -->
     <app_framerate>60</app_framerate>
-    <cam_id>0</cam_id>
+    <cam_id>1</cam_id>
     <cam_framerate>30</cam_framerate>
     <cam_rotation>0</cam_rotation>
     <width>640</width>
@@ -24,8 +24,8 @@
     <!-- * -->
     <brightest_pixel>0</brightest_pixel>
     <blobs>0</blobs>
-    <contours>1</contours>
-    <sync_video>0</sync_video>
+    <contours>0</contours>
+    <sync_video>1</sync_video>
     <!-- * -->
     <sync_video_quality>3</sync_video_quality>
     <video_color>0</video_color>
