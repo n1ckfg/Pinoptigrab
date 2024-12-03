@@ -154,8 +154,8 @@ void ofApp::update() {
     cam.update();
 
     if (cam.isFrameNew()) {
-		ofPixels tempPixels = cam.getPixelsRef();
-		gray.setFromPixels(tempPixels);
+		//ofPixels tempPixels = cam.getPixelsRef();
+		gray.setFromPixels(cam.getPixelsRef());//tempPixels);
 		frame = toCv(gray);
 		
         if (sendMjpeg) streamServer.send(gray.getPixels());
